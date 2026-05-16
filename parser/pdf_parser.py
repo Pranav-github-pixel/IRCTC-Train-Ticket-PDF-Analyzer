@@ -245,7 +245,7 @@ def _parse_pnr_train_combined(
 ) -> tuple[Optional[str], Optional[str], Optional[str]]:
     """Parse the combined PNR/Train line found in IRCTC ERS PDFs.
 
-    Example: ``"8248433572 09081/MMCT MAN SF SPL THIRD AC (3A)"``
+    Example: ``"8xxxxxxxxx 09081/MMCT MAN SF SPL THIRD AC (3A)"``
 
     Returns:
         Tuple of (pnr, train_number, train_name).

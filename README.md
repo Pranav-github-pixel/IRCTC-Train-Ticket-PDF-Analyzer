@@ -1,11 +1,10 @@
 # IRCTC Train Ticket PDF Analyzer
 
-A production-quality Python application for analyzing Indian Railway / IRCTC train ticket PDFs.
+Python application for analyzing Indian Railway / IRCTC train ticket PDFs.
 
 ## Features
 
 - **PDF Parsing** — Extracts structured data from IRCTC ticket PDFs using dual-library extraction (pdfplumber + PyMuPDF fallback)
-- **Custom Linked List** — Stores tickets in a singly-linked list with O(n log n) merge sort
 - **Excel Reports** — Multi-sheet workbook with all ticket data and per-passenger journey summaries
 - **Timeline Visualization** — Professional Plotly-based chronological journey timeline
 - **PDF Report** — Polished ReportLab PDF with executive summary, tables, and embedded timeline

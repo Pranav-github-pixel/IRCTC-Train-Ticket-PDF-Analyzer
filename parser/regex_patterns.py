@@ -14,25 +14,20 @@ import re
 # TRAIN INFORMATION
 # =====================================================================
 
-# PNR is a 10-digit number, usually on a line like:
-# "PNR Train No./Name Class"
-# "8248433572 09081/MMCT MAN SF SPL THIRD AC (3A)"
+
 PNR_PATTERN = re.compile(
     r"(?:PNR\s*(?:No\.?|Number)?\s*:?\s*(\d{10}))"
     r"|(?:^(\d{10})\s+\d{4,5})",
     re.IGNORECASE | re.MULTILINE,
 )
 
-# Train number: 4-5 digit number.  Handles both "09081/NAME" and "12655 / NAME"
 TRAIN_NUMBER_PATTERN = re.compile(
     r"(?:Train\s*(?:No\.?|Number)?\s*[:/]?\s*(\d{4,5}))"
     r"|(?:\d{10}\s+(\d{4,5})\s*/)",
     re.IGNORECASE,
 )
 
-# Train name: after train number with slash (spaces around slash tolerated),
-# or on a dedicated "Train Name" line.
-# Handles end-of-line case where class info is on the next line.
+
 TRAIN_NAME_PATTERN = re.compile(
     r"(?:Train\s*Name\s*[:/]?\s*(.+?)(?:\n|$))"
     r"|(?:\d{10}\s+\d{4,5}\s*/\s*(.+?)(?:\s+(?:FIRST|SECOND|THIRD|SLEEPER|AC\s+CHAIR)\s))"
@@ -44,8 +39,6 @@ TRAIN_NAME_PATTERN = re.compile(
 # STATION PATTERNS
 # =====================================================================
 
-# IRCTC ERS format: "Booked from To"
-# Next line: "STATION_A (CODE_A) STATION_B (CODE_B) STATION_C (CODE_C)"
 FROM_STATION_PATTERN = re.compile(
     r"(?:From|Boarding\s*(?:Station|Point|At))\s*[:/]?\s*(.+?)(?:\n|$)",
     re.IGNORECASE,
@@ -56,8 +49,7 @@ TO_STATION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Pattern for the IRCTC ERS "Booked from  To" station line
-# Matches: "STATION_NAME (CODE) STATION_NAME (CODE) STATION_NAME (CODE)"
+
 STATION_LINE_PATTERN = re.compile(
     r"([A-Z][A-Z\s]+\([A-Z]{2,6}\))\s+([A-Z][A-Z\s]+\([A-Z]{2,6}\))\s+([A-Z][A-Z\s]+\([A-Z]{2,6}\))",
     re.IGNORECASE,
@@ -77,8 +69,7 @@ _DATE_PART = r"\d{1,2}[-/]\w{3,9}[-/]\d{2,4}"
 _TIME_PART = r"\d{1,2}:\d{2}(?::\d{2})?"
 _DATETIME_PART = rf"{_DATE_PART}\s+{_TIME_PART}"
 
-# IRCTC ERS format:
-# "Start Date* 21-May-2026 Departure* 23:20 21-May-2026 Arrival* 07:25 22-May-2026"
+
 IRCTC_SCHEDULE_PATTERN = re.compile(
     r"(?:Start\s*Date\*?)\s*({date})\s+"
     r"(?:Departure\*?)\s*({time})\s+({date})\s+"
@@ -103,8 +94,7 @@ BOOKING_DATETIME_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Fallback: "Booking Date" line in IRCTC ERS
-# "GENERAL (GN) 488 KM 14-May-2026 08:53:54 HRS"
+
 BOOKING_DATE_FALLBACK = re.compile(
     rf"({_DATE_PART})\s+({_TIME_PART})\s*HRS",
     re.IGNORECASE,
@@ -115,7 +105,7 @@ DATE_OF_JOURNEY_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Schedule table: "departure_datetime * arrival_datetime"
+
 SCHEDULE_LINE_PATTERN = re.compile(
     rf"({_DATE_PART}\s+{_TIME_PART})\s+\*?\s*({_DATE_PART}\s+{_TIME_PART})",
     re.IGNORECASE,
@@ -205,17 +195,6 @@ SAC_CODE_PATTERN = re.compile(
 # PASSENGER PARSING
 # =====================================================================
 
-# IRCTC ERS passenger line format — handles all observed variations:
-#
-#   "1. SAYALI KHADSE 26 F CNF/B1/54/UPPER CNF/B1/54/UPPER"
-#   "1. SATISH NINOORAO 55 M CNF/B2/64/SIDE UPPER CNF/B2/64/SIDE UPPER"
-#   "2. PRANAV KHADSE 20 M CNF/M2/62/UPPER CAN"
-#   "1. KHADSE JYOTI 50 F CNF/B1/49/LOWER CNF /B1/49/LOWER"
-#
-# Key variations:
-#   - Berth can be two words: "SIDE UPPER", "SIDE LOWER"
-#   - Current status may be just "CAN" (cancelled)
-#   - Current status may have a space: "CNF /B1/49/LOWER"
 PASSENGER_LINE_PATTERN = re.compile(
     r"(\d+)\.?\s+"                           # Serial number
     r"([A-Z][A-Z\s.]+?)\s+"                  # Name
@@ -242,10 +221,7 @@ CURRENT_STATUS_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Parse coach/berth from status strings like:
-#   "CNF/B1/54/UPPER"
-#   "CNF /B1/49/LOWER"  (space after status prefix)
-#   "CNF/B2/64/SIDE UPPER"
+
 STATUS_DETAIL_PATTERN = re.compile(
     r"(?:CNF|RAC|WL|RLWL|GNWL|PQWL|RSWL|CAN)"
     r"\s*/([A-Z]\d+)"        # Coach (e.g., B1, S2, M2) — allow space before /
@@ -254,20 +230,13 @@ STATUS_DETAIL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# =====================================================================
-# PNR + TRAIN combined line pattern
-# =====================================================================
-# Handles both:
-#   "8248433572 09081/MMCT MAN SF SPL THIRD AC (3A)"
-#   "8248239903 12655 / NAVJEEVAN EXP THIRD AC (3A)"
-#   "6203690241 12860 / GITANJALI EXP THIRD AC ECONOMY (3E)"
+
 PNR_TRAIN_LINE_PATTERN = re.compile(
     r"(\d{10})\s+(\d{4,5})\s*/\s*(.+?)(?:\s+(?:FIRST|SECOND|THIRD|SLEEPER|AC\s+CHAIR))",
     re.IGNORECASE,
 )
 
-# Fallback: PNR + train number + name without class suffix (class on separate line)
-# Matches: "2355493090 20626/BGKT MAS SF EXP"
+
 PNR_TRAIN_LINE_FALLBACK = re.compile(
     r"^(\d{10})\s+(\d{4,5})\s*/\s*(.+?)$",
     re.IGNORECASE | re.MULTILINE,

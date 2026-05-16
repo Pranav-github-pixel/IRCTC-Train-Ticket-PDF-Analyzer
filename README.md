@@ -129,3 +129,6 @@ The application **never crashes** due to a bad PDF. Each file is parsed independ
 - **pandas** / **openpyxl** — Excel generation
 - **plotly** / **kaleido** — Timeline visualization
 - **reportlab** — PDF report generation
+
+## Tech Stack
+Two sample ERSs (obtained from web) are added in the input folder, with corresponding outputs in output folder.
